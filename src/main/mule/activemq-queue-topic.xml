@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:jms="http://www.mulesoft.org/schema/mule/jms" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/jms http://www.mulesoft.org/schema/mule/jms/current/mule-jms.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="ec250639-0e6d-4a9a-ad3f-42152048bee1" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<jms:config name="JMS_Config" doc:name="JMS Config" doc:id="a301171d-da54-42ab-a98e-b74fef2c0dc2" >
+		<jms:active-mq-connection username="admin" password="admin" >
+			<jms:factory-configuration brokerUrl="tcp://localhost:61616" />
+		</jms:active-mq-connection>
+	</jms:config>
+	<flow name="activemq-queue-topicFlow" doc:id="46fee879-f300-45d6-b5f9-b9e276d63be8" >
+		<http:listener doc:name="Listener" doc:id="15d74d03-e4cd-4999-bbc9-bf10eb55cf1a" config-ref="HTTP_Listener_config" path="/jms"/>
+		<jms:publish doc:name="Publish" doc:id="5c7453b7-3e83-4970-bd64-5e4b82f2016e" config-ref="JMS_Config" destination="TestTopic" sendCorrelationId="AUTO" destinationType="TOPIC">
+			<jms:message outboundContentType="application/json" />
+		</jms:publish>
+	</flow>
+	<flow name="activemq-queue-topicFlow1" doc:id="8693b28c-49d4-4365-a2ae-6ec0361b0260" >
+		<jms:listener doc:name="On New Message" doc:id="ec8c3dbf-382e-4f6d-8875-aef88ed44905" config-ref="JMS_Config" destination="Test" inboundContentType="application/json" ackMode="MANUAL">
+			<jms:consumer-type >
+				<jms:queue-consumer />
+			</jms:consumer-type>
+			<jms:response outboundContentType="application/json" />
+		</jms:listener>
+		<logger level="INFO" doc:name="Logger" doc:id="70fb35df-24dd-46cc-a267-6562bf3cd092" message="Message 1 #[payload]"/>
+	</flow>
+	<flow name="activemq-queue-topicFlow2" doc:id="544e3255-4125-4fd8-8d89-a0ede5703e2f" >
+		<jms:listener doc:name="On New Message" doc:id="9e511133-becd-4995-b89a-0cd7267e0c16" config-ref="JMS_Config" destination="Test" inboundContentType="application/json">
+			<jms:consumer-type >
+				<jms:queue-consumer />
+			</jms:consumer-type>
+			<jms:response outboundContentType="application/json" />
+		</jms:listener>
+		<logger level="INFO" doc:name="Logger" doc:id="d8abb409-7b56-4192-b17f-d86b68a6ff62" message="Message 2 #[payload]"/>
+	</flow>
+	<flow name="activemq-queue-topicFlow3" doc:id="d2fc968e-cf99-4cd6-a7cc-982b801cc78b" >
+		<jms:listener doc:name="On New Message" doc:id="11c1bb17-ff89-4908-8955-362d72500c49" config-ref="JMS_Config" destination="TestTopic" ackMode="MANUAL" inboundContentType="application/json" numberOfConsumers="1">
+			<jms:consumer-type >
+				<jms:topic-consumer />
+			</jms:consumer-type>
+			<jms:response outboundContentType="application/json" />
+		</jms:listener>
+		<logger level="INFO" doc:name="Logger" doc:id="2279ed28-7b3f-4552-b399-6e9823234ba3" message="Topic Message 1 #[payload]"/>
+	</flow>
+	<flow name="activemq-queue-topicFlow4" doc:id="9bb827d2-7e2d-4f09-8034-5b9f109a804f" >
+		<jms:listener doc:name="On New Message" doc:id="c670d536-1690-4fda-98e7-aeb1fd74d3ac" config-ref="JMS_Config" destination="TestTopic" inboundContentType="application/json" numberOfConsumers="1">
+			<jms:consumer-type >
+				<jms:topic-consumer />
+			</jms:consumer-type>
+			<jms:response outboundContentType="application/json" />
+		</jms:listener>
+		<logger level="INFO" doc:name="Logger" doc:id="cac38f8b-e4d0-476d-8a18-eb741ad2bff9" message="Topic Message 2 #[payload]"/>
+	</flow>
+</mule>
